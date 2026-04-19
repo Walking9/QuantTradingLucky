@@ -1,0 +1,50 @@
+# See https://pre-commit.com for more information
+repos:
+  # -------------------------------------------------------------------------
+  # General hygiene
+  # -------------------------------------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: \.ipynb$
+      - id: end-of-file-fixer
+        exclude: \.ipynb$
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+        args: ["--maxkb=1000"]
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+      - id: debug-statements
+
+  # -------------------------------------------------------------------------
+  # Ruff: lint + format (replaces black/isort/flake8)
+  # -------------------------------------------------------------------------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.8
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+      - id: ruff-format
+
+  # -------------------------------------------------------------------------
+  # Strip notebook outputs to keep diffs clean
+  # -------------------------------------------------------------------------
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.7.1
+    hooks:
+      - id: nbstripout
+
+  # -------------------------------------------------------------------------
+  # Lightweight secret scan
+  # -------------------------------------------------------------------------
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks
+
+# NOTE: mypy is intentionally NOT run in pre-commit — it needs the full env.
+#       Run `make typecheck` locally and CI runs it on every push.
