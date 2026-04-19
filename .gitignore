@@ -1,0 +1,118 @@
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ---------------------------------------------------------------------------
+# Virtual environments
+# ---------------------------------------------------------------------------
+.venv/
+venv/
+env/
+ENV/
+.python-version
+
+# ---------------------------------------------------------------------------
+# IDE / editors
+# ---------------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ---------------------------------------------------------------------------
+# Jupyter
+# ---------------------------------------------------------------------------
+.ipynb_checkpoints/
+*.ipynb_meta
+.jupyter/
+
+# ---------------------------------------------------------------------------
+# Testing / linting cache
+# ---------------------------------------------------------------------------
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+dmypy.json
+
+# ---------------------------------------------------------------------------
+# Secrets / credentials  (NEVER commit these)
+# ---------------------------------------------------------------------------
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+credentials.json
+tokens/
+secrets/
+
+# ---------------------------------------------------------------------------
+# Data directories (gitignore by default — add small fixtures explicitly)
+# ---------------------------------------------------------------------------
+data/raw/
+data/processed/
+data/cache/
+data/downloads/
+data/interim/
+*.parquet
+*.feather
+*.h5
+*.hdf5
+*.db
+*.sqlite
+
+# Keep small fixtures and READMEs
+!data/README.md
+!tests/fixtures/**/*.parquet
+!tests/fixtures/**/*.csv
+
+# ---------------------------------------------------------------------------
+# Reports (intermediate artifacts; keep source .md/.ipynb, ignore exports)
+# ---------------------------------------------------------------------------
+reports/**/*.html
+reports/**/*.pdf
+reports/**/figures/
+!reports/README.md
+
+# ---------------------------------------------------------------------------
+# Logs
+# ---------------------------------------------------------------------------
+logs/
+*.log
+
+# ---------------------------------------------------------------------------
+# OS
+# ---------------------------------------------------------------------------
+Thumbs.db
+Desktop.ini
