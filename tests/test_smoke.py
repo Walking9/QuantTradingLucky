@@ -10,6 +10,7 @@ import importlib
 
 import pytest
 
+import quant_lucky
 
 SUBPACKAGES: tuple[str, ...] = (
     "data",
@@ -29,8 +30,6 @@ SUBPACKAGES: tuple[str, ...] = (
 
 
 def test_version_is_defined() -> None:
-    import quant_lucky
-
     assert isinstance(quant_lucky.__version__, str)
     assert quant_lucky.__version__.count(".") == 2
 

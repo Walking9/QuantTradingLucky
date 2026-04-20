@@ -82,6 +82,9 @@ backtest = [
 [project.urls]
 Repository = "https://github.com/luka/QuantTradingLucky"
 
+[project.scripts]
+quant = "quant_lucky.cli:main"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/quant_lucky"]
 
@@ -114,6 +117,9 @@ ignore = [
     "PLR0913", # too many arguments (common in quant code)
     "PLR2004", # magic values (common in financial constants)
     "TRY003",  # long exception messages OK here
+    "RUF001",  # allow full-width characters (Chinese punctuation) in strings
+    "RUF002",  # allow full-width characters in docstrings
+    "RUF003",  # allow full-width characters in comments
 ]
 
 [tool.ruff.lint.per-file-ignores]
