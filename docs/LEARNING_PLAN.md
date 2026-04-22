@@ -79,7 +79,7 @@
 **交付物**
 - `src/data/` 数据管道 v0.1（A 股日频 + 美股日频 + 加密小时级）。
 - `notebooks/M01_eda.ipynb`：三个市场的 EDA 对比报告。
-- `docs/monthly-review/2026-05.md`：月报。
+- `docs/monthly-review/2026-03.md`：月报。
 
 **推荐资源**
 - 📖 《Python for Data Analysis, 3rd》— Wes McKinney

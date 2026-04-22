@@ -86,8 +86,11 @@ QuantTradingLucky/
 
 - [x] 创建学习计划（`docs/LEARNING_PLAN.md`）
 - [x] 初始化项目骨架（pyproject / ruff / mypy / pytest / CI / pre-commit）
-- [ ] **M1 进行中**：数据管道 v0.1（Tushare + yfinance + ccxt）
-- [ ] M2：市场基础与成本模型
+- [x] M1：数据管道 v0.1（Tushare + yfinance + ccxt）
+- [x] M2：市场基础与成本模型（标的池、手续费与滑点模型）
+- [ ] **M3 进行中**：时间序列与技术分析（指标库构建、ARMA/GARCH、协整分析）
+- [ ] M4：因子投资与 Alpha 研究入门
+- [ ] M5：回测系统原理与实现
 - [ ] ...
 
 ## 📝 惯例
