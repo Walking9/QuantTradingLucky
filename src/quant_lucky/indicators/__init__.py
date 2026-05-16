@@ -1,11 +1,20 @@
-"""Technical indicators implemented from scratch.
+"""Technical indicators module.
 
-Each indicator is:
-- Implemented in vectorised NumPy / Pandas (no Python loops in hot paths).
-- Unit-tested against TA-Lib or well-known reference implementations.
-- Documented with its mathematical definition and edge cases
-  (warm-up period, NaN handling, division-by-zero).
-
-Indicators here are **features**, not factors. A factor must additionally
-pass IC / turnover / stability checks in ``quant_lucky.factors``.
+This module provides common technical indicators implemented natively using pandas/numpy.
 """
+
+from .base import check_input_df, check_input_series
+from .momentum import atr, bollinger_bands, rsi, true_range
+from .trend import ema, macd, sma
+
+__all__ = [
+    "atr",
+    "bollinger_bands",
+    "check_input_df",
+    "check_input_series",
+    "ema",
+    "macd",
+    "rsi",
+    "sma",
+    "true_range",
+]

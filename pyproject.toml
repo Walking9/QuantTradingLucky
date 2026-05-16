@@ -117,6 +117,7 @@ ignore = [
     "PLR0913", # too many arguments (common in quant code)
     "PLR2004", # magic values (common in financial constants)
     "TRY003",  # long exception messages OK here
+    "PLC0415", # allow lazy imports within functions/methods
     "RUF001",  # allow full-width characters (Chinese punctuation) in strings
     "RUF002",  # allow full-width characters in docstrings
     "RUF003",  # allow full-width characters in comments
