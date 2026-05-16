@@ -13,8 +13,14 @@ from typing import ClassVar
 import pandas as pd
 import yfinance as yf
 
-from quant_lucky.data.base import DataProvider, DataProviderError, DownloadRequest
+from quant_lucky.data.base import (
+    DataProvider,
+    DataProviderError,
+    DownloadRequest,
+    RateLimitError,
+)
 from quant_lucky.data.schema import Frequency, Market
+from quant_lucky.utils.config import settings
 from quant_lucky.utils.logging import logger
 
 _FREQUENCY_MAP: dict[Frequency, str] = {
@@ -51,6 +57,8 @@ class YFinanceProvider(DataProvider):
         )
 
         try:
+            # yfinance recent versions pick up proxy automatically from HTTP_PROXY/HTTPS_PROXY
+            # environment variables. No need to pass it into Ticker/history manually if env vars are set.
             ticker = yf.Ticker(request.symbol)
             df = ticker.history(
                 start=request.start,
@@ -60,6 +68,17 @@ class YFinanceProvider(DataProvider):
                 actions=True,
             )
         except Exception as e:  # yfinance is noisy — normalise errors
+            error_msg = str(e)
+            if "Rate limited" in error_msg or "Too Many Requests" in error_msg or "429" in error_msg:
+                msg = (
+                    f"YFinance rate limit exceeded for {request.symbol}. "
+                    "YFinance is a free tier API and does not publish official limits, "
+                    "but typically blocks IPs exceeding ~2000 requests/hour or "
+                    "bursts of multiple requests per second. "
+                    "Please pause and try again later, or use a proxy/commercial data source."
+                )
+                logger.error(msg)
+                raise RateLimitError(msg) from e
             raise DataProviderError(f"yfinance fetch failed: {e}") from e
 
         if df.empty:

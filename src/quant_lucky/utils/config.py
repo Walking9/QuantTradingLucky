@@ -76,6 +76,10 @@ class Settings(BaseSettings):
     okx_api_secret: SecretStr | None = Field(default=None, alias="OKX_API_SECRET")
     okx_api_passphrase: SecretStr | None = Field(default=None, alias="OKX_API_PASSPHRASE")
 
+    # --- Network / Proxies -------------------------------------------------
+    http_proxy: str | None = Field(default=None, alias="HTTP_PROXY")
+    https_proxy: str | None = Field(default=None, alias="HTTPS_PROXY")
+
     # --- Derived paths -----------------------------------------------------
     @property
     def raw_dir(self) -> Path:

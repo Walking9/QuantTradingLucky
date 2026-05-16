@@ -16,6 +16,7 @@ import pandas as pd
 
 from quant_lucky.data.base import DataProvider, DataProviderError, DownloadRequest
 from quant_lucky.data.schema import Frequency, Market
+from quant_lucky.utils.config import settings
 from quant_lucky.utils.logging import logger
 
 _FREQUENCY_MAP: dict[Frequency, str] = {
@@ -44,7 +45,18 @@ class CCXTProvider(DataProvider):
         if not hasattr(ccxt, exchange_id):
             raise DataProviderError(f"Unknown ccxt exchange: {exchange_id}")
         exchange_cls = getattr(ccxt, exchange_id)
-        self.exchange = exchange_cls({"enableRateLimit": True})
+
+        # Configure exchange with proxy support from global settings
+        config: dict = {"enableRateLimit": True}
+
+        if settings.http_proxy or settings.https_proxy:
+            config["proxies"] = {}
+            if settings.http_proxy:
+                config["proxies"]["http"] = settings.http_proxy
+            if settings.https_proxy:
+                config["proxies"]["https"] = settings.https_proxy
+
+        self.exchange = exchange_cls(config)
         self.page_limit = page_limit
         # Per-instance name so the store partitions by exchange:
         #   data/raw/ccxt.binance/BTC-USDT/1h.parquet
