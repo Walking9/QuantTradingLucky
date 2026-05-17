@@ -7,8 +7,9 @@ them transparently.
 
 from __future__ import annotations
 
+from quant_lucky.data.providers.akshare_provider import AkshareProvider
 from quant_lucky.data.providers.ccxt_provider import CCXTProvider
 from quant_lucky.data.providers.tushare_provider import TushareProvider
 from quant_lucky.data.providers.yfinance_provider import YFinanceProvider
 
-__all__ = ["CCXTProvider", "TushareProvider", "YFinanceProvider"]
+__all__ = ["AkshareProvider", "CCXTProvider", "TushareProvider", "YFinanceProvider"]

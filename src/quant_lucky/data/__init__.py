@@ -28,7 +28,12 @@ from quant_lucky.data.base import (
     SymbolNotFoundError,
 )
 from quant_lucky.data.downloader import Downloader
-from quant_lucky.data.providers import CCXTProvider, TushareProvider, YFinanceProvider
+from quant_lucky.data.providers import (
+    AkshareProvider,
+    CCXTProvider,
+    TushareProvider,
+    YFinanceProvider,
+)
 from quant_lucky.data.schema import (
     OHLCV_COLUMNS,
     OPTIONAL_COLUMNS,
@@ -56,6 +61,7 @@ __all__ = [
     "YFinanceProvider",
     "CCXTProvider",
     "TushareProvider",
+    "AkshareProvider",
     # Orchestration
     "Downloader",
     "ParquetStore",
