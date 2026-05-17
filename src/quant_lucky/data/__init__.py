@@ -41,7 +41,7 @@ from quant_lucky.data.schema import (
     Market,
     validate_ohlcv,
 )
-from quant_lucky.data.store import ParquetStore
+from quant_lucky.data.store import InventoryEntry, ParquetStore
 
 __all__ = [
     # Schema
@@ -65,4 +65,5 @@ __all__ = [
     # Orchestration
     "Downloader",
     "ParquetStore",
+    "InventoryEntry",
 ]
