@@ -30,6 +30,7 @@ from quant_lucky.data.base import (
 )
 from quant_lucky.data.schema import Frequency, Market
 from quant_lucky.utils.logging import logger
+from quant_lucky.utils.net import bypass_proxy_env
 
 Adjust = Literal["qfq", "hfq", ""]
 
@@ -50,6 +51,7 @@ _INTRADAY_PERIOD_MAP: dict[Frequency, str] = {
 _COLUMN_RENAME: dict[str, str] = {
     "日期": "timestamp",
     "时间": "timestamp",
+    "date": "timestamp",  # sina endpoint
     "开盘": "open",
     "最高": "high",
     "最低": "low",
@@ -61,6 +63,30 @@ _COLUMN_RENAME: dict[str, str] = {
 
 _CN_TZ = "Asia/Shanghai"
 _US_TZ = "America/New_York"
+
+
+def _is_transient_network_error(exc: BaseException) -> bool:
+    """Return True if ``exc`` looks like a transient upstream issue worth retrying.
+
+    AkShare wraps every error in plain ``Exception`` and only string-stringifies
+    the cause, so we match on substrings of the message rather than exception
+    types. Covers: connection reset, 502/503, empty reply, and DNS hiccups.
+    """
+    text = str(exc).lower()
+    needles = (
+        "remotedisconnected",
+        "remote end closed",
+        "connection aborted",
+        "connection reset",
+        "empty reply",
+        "502",
+        "503",
+        "504",
+        "max retries exceeded",
+        "read timed out",
+        "getaddrinfo failed",
+    )
+    return any(n in text for n in needles)
 
 
 class AkshareProvider(DataProvider):
@@ -106,14 +132,33 @@ class AkshareProvider(DataProvider):
         )
 
         try:
-            df = self._dispatch(market, request.frequency, symbol, start, end)
+            with bypass_proxy_env():
+                df = self._dispatch(market, request.frequency, symbol, start, end)
         except (DataProviderError, ValueError):
             raise
         except Exception as e:  # AkShare wraps everything in plain Exception
             text = str(e)
             if "429" in text or "Too Many Requests" in text or "rate" in text.lower():
                 raise RateLimitError(f"akshare rate limited: {e}") from e
-            raise DataProviderError(f"akshare fetch failed: {e}") from e
+            # A-share daily: eastmoney is often flaky from mainland; try sina.
+            if (
+                market is Market.A_SHARE
+                and request.frequency is Frequency.DAILY
+                and _is_transient_network_error(e)
+            ):
+                logger.warning(
+                    "akshare eastmoney failed ({err}); falling back to sina endpoint",
+                    err=type(e).__name__,
+                )
+                try:
+                    with bypass_proxy_env():
+                        df = self._fetch_a_share_daily_sina(symbol, start, end)
+                except Exception as fallback_err:  # pragma: no cover - belt&braces
+                    raise DataProviderError(
+                        f"akshare fetch failed (eastmoney: {e}; sina: {fallback_err})"
+                    ) from fallback_err
+            else:
+                raise DataProviderError(f"akshare fetch failed: {e}") from e
 
         if df is None or df.empty:
             raise DataProviderError(f"akshare returned empty for {symbol}")
@@ -186,6 +231,34 @@ class AkshareProvider(DataProvider):
             )
 
         raise DataProviderError(f"akshare does not support market: {market}")
+
+    # ------------------------------------------------------------------
+    # Sina fallback for A-share daily
+    # ------------------------------------------------------------------
+    def _fetch_a_share_daily_sina(
+        self, ak_symbol: str, start: str, end: str
+    ) -> pd.DataFrame:
+        """Fall back to the sina endpoint when eastmoney is unavailable.
+
+        ``stock_zh_a_daily`` takes a sina-style symbol like ``sh600519`` or
+        ``sz000001``. We infer the prefix from the bare 6-digit code:
+        ``6`` / ``9`` → Shanghai, otherwise Shenzhen. (This matches the
+        rule used by Tushare's exchange suffix mapping.)
+        """
+        if not (ak_symbol.isdigit() and len(ak_symbol) == 6):
+            raise DataProviderError(
+                f"sina fallback requires bare 6-digit A-share code, got {ak_symbol!r}"
+            )
+        prefix = "sh" if ak_symbol[0] in ("6", "9") else "sz"
+        sina_symbol = f"{prefix}{ak_symbol}"
+
+        df = self._ak.stock_zh_a_daily(
+            symbol=sina_symbol,
+            start_date=start,
+            end_date=end,
+            adjust=self._adjust,
+        )
+        return df
 
     # ------------------------------------------------------------------
     # Symbol normalization
