@@ -4,6 +4,11 @@ Covers US equities and most global tickers including major ETFs and
 ``BTC-USD``/``ETH-USD`` ticker aliases. Good for learning; NOT suitable
 for production — yfinance has known adjustment inconsistencies and is
 unofficial scraping.
+
+The HTTP layer goes through ``curl_cffi`` with Chrome impersonation so
+Yahoo's edge does not return 429 based on TLS / User-Agent fingerprint.
+Standard ``HTTP_PROXY`` / ``HTTPS_PROXY`` environment variables are still
+honoured (needed if your machine cannot reach Yahoo directly).
 """
 
 from __future__ import annotations
@@ -12,6 +17,7 @@ from typing import ClassVar
 
 import pandas as pd
 import yfinance as yf
+from curl_cffi import requests as curl_requests
 
 from quant_lucky.data.base import (
     DataProvider,
@@ -20,7 +26,6 @@ from quant_lucky.data.base import (
     RateLimitError,
 )
 from quant_lucky.data.schema import Frequency, Market
-from quant_lucky.utils.config import settings
 from quant_lucky.utils.logging import logger
 
 _FREQUENCY_MAP: dict[Frequency, str] = {
@@ -43,6 +48,13 @@ class YFinanceProvider(DataProvider):
     supported_frequencies: ClassVar[set[Frequency]] = set(_FREQUENCY_MAP.keys())
     requires_credentials: ClassVar[bool] = False
 
+    def __init__(self, impersonate: str = "chrome") -> None:
+        # One curl_cffi session shared across all fetches so Yahoo's cookie
+        # + "crumb" token stay warm. Chrome impersonation is what defeats
+        # the 429 wall — a plain requests.Session gets blocked at the edge
+        # regardless of request volume.
+        self._session = curl_requests.Session(impersonate=impersonate)
+
     def fetch(self, request: DownloadRequest) -> pd.DataFrame:
         yf_interval = _FREQUENCY_MAP.get(request.frequency)
         if yf_interval is None:
@@ -57,9 +69,10 @@ class YFinanceProvider(DataProvider):
         )
 
         try:
-            # yfinance recent versions pick up proxy automatically from HTTP_PROXY/HTTPS_PROXY
-            # environment variables. No need to pass it into Ticker/history manually if env vars are set.
-            ticker = yf.Ticker(request.symbol)
+            # yfinance picks up HTTP_PROXY / HTTPS_PROXY env vars from the
+            # underlying session. The curl_cffi session honours them too,
+            # so no explicit proxy plumbing is needed here.
+            ticker = yf.Ticker(request.symbol, session=self._session)
             df = ticker.history(
                 start=request.start,
                 end=request.end,
