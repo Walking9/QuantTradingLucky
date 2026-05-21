@@ -41,6 +41,38 @@
 
 <!-- 在此之下新增记录，最新的放最上面 -->
 
+### 2026-05-20 · 🟡 "完全恒定"的收益序列让 Sharpe 爆炸到 7e16
+
+**分类**：回测 / 指标
+**上下文**：M5 写 `compute_performance(pd.Series([0.001]*252))`，期望 Sharpe 是 NaN（标准差为 0 → 无定义），结果跑出来 `sharpe=7.3e16`。
+
+**现象**
+- 单测 `test_constant_positive_return_zero_volatility` 断言 `np.isnan(report.sharpe)` 失败。
+- 实际 `annual_vol ≈ 3.45e-18`（不是 0），`annual_return / annual_vol ≈ 7.3e16`。
+
+**根因**
+- pandas `Series.std(ddof=1)` 对完全恒定的浮点序列**不返回精确 0** — 减均值时残留 ULP 量级误差，平方根放大后就是机器 epsilon 级。
+- 我的判断写成 `if annual_vol > 0`，这对 1e-18 是 True，于是除法产生天文数。
+
+**修复**
+```python
+# src/quant_lucky/backtest/report.py
+vol_floor = 1e-12 * max(abs(mean), 1e-6)
+sharpe = (
+    annual_return / annual_vol
+    if not np.isnan(annual_vol) and annual_vol > vol_floor
+    else float("nan")
+)
+```
+同样的守护加到 Sortino 上。
+
+**教训**
+- **永远不要拿浮点和 0 直接比较**，尤其是经过 `cumsum / mean / std` 这种累积运算后。
+- 写"无定义"检查时，相对阈值 (`相对于 mean 的 1e-12`) 比绝对阈值更稳健。
+- 这个 bug 在真实策略上也会出现：常数股息复利曲线、停牌后被前向填充的价格——任何"几乎不动"的序列都会触发。
+
+---
+
 ### 2026-04-20 · 🟡 `settings.data_root` 默认值随 CWD 漂移
 
 **分类**：工程 / 配置

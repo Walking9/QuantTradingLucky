@@ -89,8 +89,9 @@ QuantTradingLucky/
 - [x] M1：数据管道 v0.1（Tushare + yfinance + ccxt）
 - [x] M2：市场基础与成本模型（标的池、手续费与滑点模型）
 - [x] M3：时间序列与技术分析（指标库构建、ARMA/GARCH、协整分析）
-- [x] **M4：因子投资与 Alpha 研究入门**（`factors/` + 4 个因子的测试报告 + 智能代理网络层）
-- [ ] M5：回测系统原理与实现
+- [x] M4：因子投资与 Alpha 研究入门（`factors/` + 4 个因子的测试报告 + 智能代理网络层）
+- [x] **M5 (进行中)**：自研向量化回测引擎 v0.1（`backtest.VectorEngine` + `PerformanceReport`，38 个单测 + `notebooks/M05_backtest_traps.ipynb` 演示 4 大回测陷阱）
+- [ ] M6：经典策略复现与评价（动量 / 均线 / 风险平价）
 - [ ] ...
 
 ## 📝 惯例

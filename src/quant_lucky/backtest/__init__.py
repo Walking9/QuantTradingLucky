@@ -19,4 +19,30 @@ Core responsibilities shared by both engines:
 - Bias guards: no look-ahead, no survivorship, proper point-in-time.
 - Uniform ``PerformanceReport`` output (Sharpe, Sortino, Calmar, MDD,
   turnover, hit rate, factor exposures).
+
+Typical usage
+-------------
+::
+
+    from quant_lucky.backtest import VectorEngine
+
+    engine = VectorEngine(cost_bps=10.0)
+    result = engine.run(weights, prices)
+    print(result.report)
+    result.portfolio_value.plot()
 """
+
+from __future__ import annotations
+
+from quant_lucky.backtest.event import Event, EventEngine
+from quant_lucky.backtest.report import PerformanceReport, compute_performance
+from quant_lucky.backtest.vector import BacktestResult, VectorEngine
+
+__all__ = [
+    "BacktestResult",
+    "Event",
+    "EventEngine",
+    "PerformanceReport",
+    "VectorEngine",
+    "compute_performance",
+]
