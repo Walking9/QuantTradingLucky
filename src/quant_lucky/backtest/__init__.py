@@ -35,6 +35,7 @@ Typical usage
 from __future__ import annotations
 
 from quant_lucky.backtest.event import Event, EventEngine
+from quant_lucky.backtest.factor_bridge import long_short_weights
 from quant_lucky.backtest.report import PerformanceReport, compute_performance
 from quant_lucky.backtest.vector import BacktestResult, VectorEngine
 
@@ -45,4 +46,5 @@ __all__ = [
     "PerformanceReport",
     "VectorEngine",
     "compute_performance",
+    "long_short_weights",
 ]
