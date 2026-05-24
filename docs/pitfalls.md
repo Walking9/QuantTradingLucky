@@ -41,6 +41,98 @@
 
 <!-- 在此之下新增记录，最新的放最上面 -->
 
+### 2026-05-24 · 🟠 把 train slice 喂给 `strategy_fn` 等于把 lookback 砍掉
+
+**分类**：回测 / Walk-Forward
+**上下文**：M5 写 `backtest.validation.walk_forward`，第一版 API 设计成
+`strategy_fn(param, train_prices) -> train_weights`，理由是「跟 sklearn 的
+`fit(X_train)` 对齐」。跑 20 日动量策略时发现每个 split 前 20 个交易日都是
+0 权重——明明 strategy_fn 里写的是 `pct_change(20).shift(1)`。
+
+**现象**
+- Walk-Forward OOS 净值在每个 split 头部都有一段平台期。
+- 同一策略在 full panel 上跑出来没有这个平台期，仅 burn-in 阶段为 0。
+- 单测里手算的 OOS Sharpe 和 driver 跑出来的对不上。
+
+**根因**
+- `pct_change(20).shift(1)` 要 21 个交易日的前置数据才能给出第一个非 NaN 权重。
+- 把 200-bar 的 train slice 单独喂给 strategy_fn，相当于让它假装历史从 train slice
+  开始，于是「最近 20 天的动量」前 20 个 train bar 全是 NaN → 0 权重。
+- 每个 split 都重新付一遍 lookback 税 = 用错误的「冷启动样本」估指标。
+
+**修复**
+```python
+# src/quant_lucky/backtest/validation.py 模块文档
+# A strategy function takes a parameter dict + the FULL price panel and
+# returns the weights it would have used on every date in that panel.
+# Key contract: the strategy MUST be no-look-ahead — weight at ``t`` may
+# only depend on prices ``≤ t-1``. The Walk-Forward driver does NOT
+# enforce this; it trusts the strategy.
+```
+- API 改成 `strategy_fn(param, full_prices) -> full_weights_df`，driver 只
+  对**权重 DataFrame** 切 train/test，不对**计算**切。
+- 副作用：strategy_fn 必须自证无前视；driver 不帮你管。这条强制约束写在模块
+  docstring 的「Performance note」段。
+
+**教训**
+- Walk-Forward 的切分点是「评估指标」，不是「策略计算」。一切需要 lookback 的
+  指标都该一次性算到全样本上，再切窗口看表现。
+- sklearn 的 `fit(X_train)` 类比在时间序列上是有毒的——「拟合」和「计算特征」
+  在时间序列里是两件事。
+- 测试 `test_walk_forward_concatenated_oos_covers_all_test_dates` 守住「OOS 长度
+  必须等于 split test 长度之和」的不变量。
+
+---
+
+### 2026-05-24 · 🟠 月度调仓的 ffill 权重在两个引擎里是两个策略
+
+**分类**：回测 / 引擎对照
+**上下文**：M5 写 `scripts/verify_vectorbt_parity.py`，第一版把月度调仓策略
+写成「调仓日权重 = 1/N、其它日 ffill」。`VectorEngine` 跑出来 Sharpe +0.376、
+vectorbt 跑出来 Sharpe +0.353，10bps 成本下终值差 -0.14%。看似在 3% 容差内，
+但同样的「无成本」版本却严格相等——异常。
+
+**现象**
+- `monthly_rebalance` + `cost_bps=10`，两个引擎终值偏差 -0.14% / Sharpe 差 -0.024。
+- 把同一份权重 print 出来对齐到逐 bar 浮点完全相同。
+- 把 cost 降到 0，偏差几乎消失（< 1e-4）—— 说明差异**只在成本侧**。
+
+**根因**
+- 自研引擎是「**权重态**」：以为用户传的就是真实持仓权重，于是 `Δw[t] = w[t] - w[t-1]`，
+  ffill 后 Δw = 0 → 月内无交易、无成本。
+- vectorbt 是「**股数态**」：每天用 `targetpercent` 把仓位**拉回** 1/N，月内
+  天天调仓、天天付 10bps。
+- 同一份 DataFrame 在两个引擎里表达的策略**不同**——自研引擎认为是
+  「每月调一次、月内任由漂移」，vectorbt 认为是「每天都强制回到 1/N」。
+- 0 成本下两条净值数学等价（连续股数 + 0 fees → 漂移路径终值一样），
+  10bps 成本立刻把语义差异显形。
+
+**修复**
+- 把 parity 测试的月度调仓改成**显式构造漂移权重**：在每个月初按 NAV/N 算
+  shares，月内固定 shares、显式算 `value[t] / NAV[t]` 当作真实权重路径。
+  这样两个引擎收到的「权重」就是真实持仓比例，行为对齐。
+- 留一个 `scenario_naive_monthly_ffill_trap`（不参与 parity 验收）专门展示
+  这个陷阱，并把整段解释写进 `reports/m05_vectorbt_parity.md` 第 5 节。
+
+```python
+# scripts/verify_vectorbt_parity.py
+def scenario_monthly_rebalance_drifted(prices):
+    # ... per-month: 计算 shares = (nav / N) / price0
+    # 月内权重 = shares * price[t] / NAV[t] —— 显式漂移
+```
+
+**教训**
+- 「权重 DataFrame」不是一个无歧义的语言。同一张表至少有两种合法解释：
+  「这是真实持仓」vs「这是每天的调仓目标」。两个引擎选了不同的解释。
+- 在写跨引擎对照前，先用一句话钉死语义——「我传的是漂移后真实权重」还是
+  「我传的是 rebalance target」。否则成本一开就翻车。
+- M6 以后做月度/季度调仓策略**禁用 `ffill`**，要么显式构造漂移权重，要么在
+  非调仓日填 NaN（让 vectorbt 也跳过那一天）。两种做法等价。
+- 此坑的根因不是 bug，是规约不清；所以正确处理是写文档 + 留陷阱测试，
+  不是「修引擎」。
+
+---
+
 ### 2026-05-20 · 🟡 "完全恒定"的收益序列让 Sharpe 爆炸到 7e16
 
 **分类**：回测 / 指标

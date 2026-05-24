@@ -37,6 +37,15 @@ from __future__ import annotations
 from quant_lucky.backtest.event import Event, EventEngine
 from quant_lucky.backtest.factor_bridge import long_short_weights
 from quant_lucky.backtest.report import PerformanceReport, compute_performance
+from quant_lucky.backtest.validation import (
+    Split,
+    WalkForwardResult,
+    anchored_walk_forward,
+    deflated_sharpe_ratio,
+    fixed_split,
+    rolling_walk_forward,
+    walk_forward,
+)
 from quant_lucky.backtest.vector import BacktestResult, VectorEngine
 
 __all__ = [
@@ -44,7 +53,14 @@ __all__ = [
     "Event",
     "EventEngine",
     "PerformanceReport",
+    "Split",
     "VectorEngine",
+    "WalkForwardResult",
+    "anchored_walk_forward",
     "compute_performance",
+    "deflated_sharpe_ratio",
+    "fixed_split",
     "long_short_weights",
+    "rolling_walk_forward",
+    "walk_forward",
 ]
