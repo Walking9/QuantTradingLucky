@@ -1,0 +1,59 @@
+# momentum_us_monthly_top20 — cross-sectional momentum (Jegadeesh & Titman 1993)
+#
+# Reproducible config for `python strategies/momentum_us_monthly_top20/run_backtest.py`.
+# Override any value at the CLI with `--set key=value` (dotted keys), e.g.
+#   --set synthetic.autocorr=0.12   (run the planted-edge demo)
+#   --set signal.long_only=true     (long-only "buy top 20%")
+
+name: momentum_us_monthly_top20
+cost_bps: 10.0          # per-side bps; liquid US large-caps
+periods_per_year: 252
+oos_fraction: 0.3       # last 30% reserved as out-of-sample
+
+signal:
+  lookback: 252         # ~12 trading months
+  skip: 21              # ~1 month skipped → the classic "12-1" momentum
+  top_quantile: 0.2     # long top 20%, short bottom 20%
+  long_only: false      # false = dollar-neutral long-short (canonical J&T)
+  gross_leverage: 1.0
+  rebalance: M          # monthly rebalance (hold weights flat between)
+
+universe:
+  # The S&P 500 cross-section is NOT downloadable offline (this repo has a
+  # documented yfinance 429 history). A handful of cached US names cannot
+  # form a 500-name ranking, so the run falls back to a synthetic, edgeless
+  # panel — see README. `min_real_assets` is set high on purpose so the thin
+  # real basket is rejected rather than silently producing a 4-name "ranking".
+  real_specs:
+    - [yfinance, AAPL]
+    - [yfinance, KO]
+    - [yfinance, PEP]
+    - [yfinance, SPY]
+  min_real_assets: 30
+  min_real_rows: 504
+
+synthetic:
+  n_assets: 60
+  n_days: 1512          # ~6 years of business days
+  seed: 20260601
+  autocorr: 0.0         # 0.0 = NO planted edge (honest plumbing run).
+                        # >0 injects trailing-return persistence to show the
+                        # machinery captures momentum when an edge exists.
+  # Homogeneous expected returns: no static drift/beta dispersion. This makes
+  # the autocorr=0 panel a TRUE null — a momentum sort ranks pure idiosyncratic
+  # noise and earns ~0 gross. Without it (the generator's heterogeneous
+  # defaults), momentum mechanically harvests the *static* drift/beta spread
+  # and posts a fake Sharpe ~2.5 — an artifact of the generator fixing the
+  # drifts, not a tradeable alpha. See the report and docs/pitfalls.md.
+  drift_dispersion: 0.0
+  beta_low: 1.0
+  beta_high: 1.0
+
+walk_forward:
+  train_size: 504       # ~2y in-sample window
+  test_size: 126        # ~6m out-of-sample slice
+
+sensitivity:
+  lookback: [126, 189, 252, 315]
+  skip: [0, 21, 42]
+  top_quantile: [0.1, 0.2, 0.3]

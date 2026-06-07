@@ -1,0 +1,34 @@
+# risk_parity_multi_asset — inverse-volatility risk parity (cross-market)
+#
+#   python strategies/risk_parity_multi_asset/run_backtest.py
+#   python strategies/risk_parity_multi_asset/run_backtest.py --set signal.rebalance=W
+
+name: risk_parity_multi_asset
+cost_bps: 15.0          # per-side bps blended across venues (crypto taker ~10,
+                        # equity ~5-10); monthly rebalance keeps turnover low.
+periods_per_year: 252   # inner-join keeps only days ALL venues trade (drops
+                        # crypto weekends) → ~252 bars/yr, not 365. See README.
+oos_fraction: 0.3
+
+signal:
+  vol_window: 63        # ~1 quarter trailing realised vol
+  rebalance: M          # monthly; weights held flat between
+  gross_leverage: 1.0   # fully invested, long-only, no leverage
+
+universe:
+  # Cross-market basket (real cached data, ~2021-03 → 2024-12):
+  #   BTC (crypto), SPY (US equity), CSI-300 (China equity).
+  # Weakly-correlated across regimes → a good risk-parity demonstrator.
+  specs:
+    - [ccxt.binance, "BTC-USDT"]
+    - [yfinance, "SPY"]
+    - [yfinance, "000300.SS"]
+  min_rows: 300
+
+walk_forward:
+  train_size: 252       # ~1y in-sample
+  test_size: 63         # ~1 quarter out-of-sample
+
+sensitivity:
+  vol_window: [21, 42, 63, 126]
+  rebalance: ["W", "M"]

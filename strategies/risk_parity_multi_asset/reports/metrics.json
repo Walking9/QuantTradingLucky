@@ -1,0 +1,70 @@
+{
+  "name": "risk_parity_multi_asset",
+  "data_source": "real",
+  "span_start": "2021-03-10",
+  "span_end": "2024-12-30",
+  "n_assets": 3,
+  "cost_bps": 15.0,
+  "periods_per_year": 252,
+  "full": {
+    "annual_return": 0.08913903989988069,
+    "annual_vol": 0.1738239511489497,
+    "sharpe": 0.5128121833077967,
+    "sortino": 0.7172440881463502,
+    "calmar": 0.2732512048359603,
+    "max_drawdown": -0.32621645695356816,
+    "hit_rate": 0.46443514644351463,
+    "n_periods": 717
+  },
+  "in_sample": {
+    "annual_return": -0.05509750580705851,
+    "annual_vol": 0.18004599696642512,
+    "sharpe": -0.3060190547715041,
+    "sortino": -0.4079678354894891,
+    "calmar": -0.16889860898373002,
+    "max_drawdown": -0.32621645695356816,
+    "hit_rate": 0.4111776447105788,
+    "n_periods": 501
+  },
+  "out_of_sample": {
+    "annual_return": 0.4236876945256981,
+    "annual_vol": 0.15683197074441482,
+    "sharpe": 2.701539058105515,
+    "sortino": 4.461168161109694,
+    "calmar": 5.6345483923029045,
+    "max_drawdown": -0.07519461455056065,
+    "hit_rate": 0.5879629629629629,
+    "n_periods": 216
+  },
+  "split": {
+    "train_start": "2021-03-10",
+    "train_end": "2023-11-01",
+    "test_start": "2023-11-02",
+    "test_end": "2024-12-30"
+  },
+  "benchmark": {
+    "annual_return": 0.16921017924576373,
+    "annual_vol": 0.28757138404341887,
+    "sharpe": 0.5884110472557158,
+    "sortino": 0.8551263744532089,
+    "calmar": 0.3745233728223412,
+    "max_drawdown": -0.45180138684169713,
+    "hit_rate": 0.5118549511854951,
+    "n_periods": 717
+  },
+  "attribution": {
+    "beta": 0.5131892197379768,
+    "alpha_annual": 0.002302200041023993,
+    "correlation": 0.8490115040001146,
+    "r_squared": 0.7208205339245366,
+    "n_obs": 717
+  },
+  "walk_forward": {
+    "n_splits": 8,
+    "n_trials": 32,
+    "aggregate_oos_sharpe": 1.5071749317435086,
+    "deflated_sharpe": 0.21032210681475982,
+    "mean_is_sharpe": 0.5850202971251743,
+    "mean_oos_sharpe": 1.5547066222514077
+  }
+}

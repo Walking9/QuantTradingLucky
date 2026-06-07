@@ -41,6 +41,51 @@
 
 <!-- 在此之下新增记录，最新的放最上面 -->
 
+### 2026-06-07 · 🔴 合成面板的"静态截面离散度"会被动量排序误读成 Alpha
+
+**分类**：回测 / 数据 / 过拟合
+**上下文**：M6 写 `momentum_us_monthly_top20`。离线没有标普 500 横截面，用
+`synthetic_price_panel` 兜底。默认想法是"`autocorr=0` → 无边 → 动量赚 ≈0"，
+跑出来却是 **full Sharpe 2.47、OOS 2.60、agg WF OOS 2.34**。
+
+**现象**
+```
+data: synthetic | autocorr=0.0
+full   sharpe 2.47    out-sample sharpe 2.60
+```
+一个声称"无植入边"的面板上，月度多空动量跑出了 Sharpe 2.5。典型的"Sharpe > 2 先
+怀疑自己"。
+
+**根因**
+`synthetic_price_panel` 的默认 generator 给每个资产**异质的静态期望收益**
+（`drift_dispersion=0.10`，`beta ∈ [0.6, 1.4]`）。在持续正漂移的市场里，
+按 trailing return 排序 ≈ 按"真实 drift / beta"排序——而真实 drift 是 generator
+写死的、回测能"偷看"到的常数。于是"赢家持续赢"，动量机械地收割了这份静态离散度。
+这**不是时间序列动量 Alpha**，是一个不可交易的静态 tilt（实盘里你不知道每个名字的
+真实 drift）。
+
+**验证**（同 seed，仅改 generator 参数）
+```
+A 默认 generator（静态离散），autocorr=0  : gross Sharpe 2.56   ← 假边
+B 同质 drift/beta，autocorr=0（真零假设）  : gross Sharpe 0.19   ← 真无边
+C 同质 + autocorr=0.12（植入真边）         : gross Sharpe 3.53   ← 真边
+```
+
+**修复**
+- 动量包的合成配置改为**同质期望收益**：`drift_dispersion=0, beta_low=beta_high=1.0`。
+  这样 `autocorr=0` 是真零假设（B），动量排序的是纯特异噪声，Sharpe≈0、DSR≈0。
+- 用 `--set synthetic.autocorr=0.12` 注入真持续性（C），同一套机器 DSR 跳到 1.00。
+- 把"零假设 DSR≈0 / 真边 DSR≈1"的对照写进 `reports/strategies/momentum_us.md`。
+
+**教训**
+- **合成数据的"无边"必须是构造出来的，不是默认的**：任何带静态截面离散度的 generator
+  对横截面策略都不是零假设。做 null 检验前先问"我的 generator 里有没有策略能合法收割
+  的结构"。
+- 这是 §5「为什么回测会骗人」的最纯粹案例：回测好看可以纯粹因为不可交易的理由。
+  attribution（beta≈0）和 DSR 都帮着拆穿它，但**最终是靠理解 generator 才定位的**。
+
+---
+
 ### 2026-05-24 · 🟠 把 train slice 喂给 `strategy_fn` 等于把 lookback 砍掉
 
 **分类**：回测 / Walk-Forward

@@ -1,0 +1,70 @@
+{
+  "name": "momentum_us_monthly_top20",
+  "data_source": "synthetic",
+  "span_start": "2018-01-02",
+  "span_end": "2023-10-18",
+  "n_assets": 60,
+  "cost_bps": 10.0,
+  "periods_per_year": 252,
+  "full": {
+    "annual_return": 0.003172932356723323,
+    "annual_vol": 0.04037148595465915,
+    "sharpe": 0.07859340030948612,
+    "sortino": 0.11134996899319391,
+    "calmar": 0.04062542958414083,
+    "max_drawdown": -0.07810212443789044,
+    "hit_rate": 0.4146825396825397,
+    "n_periods": 1512
+  },
+  "in_sample": {
+    "annual_return": 0.0033526810735168147,
+    "annual_vol": 0.03793782934000028,
+    "sharpe": 0.08837303377243749,
+    "sortino": 0.12480213990409017,
+    "calmar": 0.042926887042400295,
+    "max_drawdown": -0.07810212443789044,
+    "hit_rate": 0.3790170132325142,
+    "n_periods": 1058
+  },
+  "out_of_sample": {
+    "annual_return": 0.0027540465805834338,
+    "annual_vol": 0.04558657433570378,
+    "sharpe": 0.060413545450956195,
+    "sortino": 0.0860444397460736,
+    "calmar": 0.04556282046511351,
+    "max_drawdown": -0.060445041647326225,
+    "hit_rate": 0.4977973568281938,
+    "n_periods": 454
+  },
+  "split": {
+    "train_start": "2018-01-02",
+    "train_end": "2022-01-20",
+    "test_start": "2022-01-21",
+    "test_end": "2023-10-18"
+  },
+  "benchmark": {
+    "annual_return": 0.13010533520060671,
+    "annual_vol": 0.16281175081288204,
+    "sharpe": 0.7991151409589318,
+    "sortino": 1.1890913394001505,
+    "calmar": 0.49928827956719285,
+    "max_drawdown": -0.260581592889359,
+    "hit_rate": 0.503968253968254,
+    "n_periods": 1512
+  },
+  "attribution": {
+    "beta": -0.0017478630125614073,
+    "alpha_annual": 0.0034003386598573672,
+    "correlation": -0.007048852191762329,
+    "r_squared": 4.9686317221312584e-05,
+    "n_obs": 1512
+  },
+  "walk_forward": {
+    "n_splits": 8,
+    "n_trials": 32,
+    "aggregate_oos_sharpe": 0.18525266761495648,
+    "deflated_sharpe": 6.429672580250268e-05,
+    "mean_is_sharpe": 0.22843800598627595,
+    "mean_oos_sharpe": 0.18595348389011815
+  }
+}

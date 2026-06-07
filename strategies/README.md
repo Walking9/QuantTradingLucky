@@ -31,4 +31,19 @@ strategies/<strategy_name>/
 4. **有稳健性**：参数敏感性扫描 + 不同市场区间测试。
 5. **有归因**：收益来源拆解（市场 Beta / 风格 / Alpha）。
 
-策略还没开始写？这很正常。至少到 M6 才会有第一个完整策略。
+## 已实现策略（M6）
+
+| 包 | 策略 | 数据 | 报告 |
+|---|---|---|---|
+| `momentum_us_monthly_top20/` | 横截面 12-1 动量（J&T 1993） | 合成（离线无标普横截面） | [`reports/strategies/momentum_us.md`](../reports/strategies/momentum_us.md) |
+| `dual_ma_a_daily_vol_filter/` | 双均线 + 波动率过滤趋势 | **真实** A 股 8 名 | [`reports/strategies/dual_ma_a.md`](../reports/strategies/dual_ma_a.md) |
+| `risk_parity_multi_asset/` | 逆波动率风险平价 | **真实** BTC+SPY+CSI300 | [`reports/strategies/risk_parity_multi.md`](../reports/strategies/risk_parity_multi.md) |
+
+共享评测层在 `quant_lucky.strategies.evaluation`（`run_research` / `evaluate_strategy` /
+`parameter_sensitivity` / `attribution` / `write_artifacts`），CLI 辅助在
+`quant_lucky.strategies.cli`。每个包 `python run_backtest.py` 即可复现并把
+`metrics.json` / `RESULTS.md` / `equity_curve.csv` / `sensitivity.csv` 写入其 `reports/`。
+
+> **关于 `tests/` 的一处刻意偏离**：上面的目录约定列了 `tests/`，但本仓库的包级回归
+> 测试集中放在主测试树 `tests/strategies/test_packages.py`（按文件路径加载各包
+> `strategy.py`），以便 CI（`testpaths=["tests"]`）能收集到。各包因此不再单独建 `tests/`。

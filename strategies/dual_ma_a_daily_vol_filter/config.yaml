@@ -1,0 +1,44 @@
+# dual_ma_a_daily_vol_filter — dual moving-average + volatility filter (A-shares)
+#
+#   python strategies/dual_ma_a_daily_vol_filter/run_backtest.py
+#   python strategies/dual_ma_a_daily_vol_filter/run_backtest.py --set signal.vol_max=null  # filter off
+
+name: dual_ma_a_daily_vol_filter
+cost_bps: 30.0          # per-side bps. A-shares: ~5 bps buy, ~55 bps sell
+                        # (stamp duty 50 bps sell-side + commission/transfer).
+                        # 30 bps/side is a conservative symmetric blend — see README.
+periods_per_year: 252
+oos_fraction: 0.3
+
+signal:
+  fast: 20             # fast SMA
+  slow: 60             # slow SMA (hold while fast > slow)
+  vol_window: 20       # realised-vol estimate window
+  vol_max: 0.40        # annualised vol ceiling; null disables the filter
+  long_only: true      # A-share retail cannot easily short → cash on down-trend
+  gross_leverage: 1.0
+  normalise: false     # budget-per-name: hold cash when names are gated off
+
+universe:
+  # Eight cached, liquid A-share names across sectors (real akshare data,
+  # ~2022-01 → 2023-12). A small basket — enough to demonstrate the strategy
+  # and the framework, not to draw a population-level conclusion (see README).
+  specs:
+    - [akshare, "600519.SH"]   # 贵州茅台 Kweichow Moutai (consumer)
+    - [akshare, "600036.SH"]   # 招商银行 China Merchants Bank (financials)
+    - [akshare, "601318.SH"]   # 中国平安 Ping An (insurance)
+    - [akshare, "600276.SH"]   # 恒瑞医药 Hengrui (healthcare)
+    - [akshare, "000333.SZ"]   # 美的集团 Midea (industrials)
+    - [akshare, "600887.SH"]   # 伊利股份 Yili (consumer staples)
+    - [akshare, "000001.SZ"]   # 平安银行 Ping An Bank (financials)
+    - [akshare, "600000.SH"]   # 浦发银行 SPD Bank (financials)
+  min_rows: 200
+
+walk_forward:
+  train_size: 252       # ~1y in-sample
+  test_size: 63         # ~1 quarter out-of-sample
+
+sensitivity:
+  fast: [10, 20, 30]
+  slow: [40, 60, 90]
+  vol_max: [0.30, 0.40, 0.50, null]

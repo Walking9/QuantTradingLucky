@@ -1,0 +1,70 @@
+{
+  "name": "dual_ma_a_daily_vol_filter",
+  "data_source": "real",
+  "span_start": "2022-01-03",
+  "span_end": "2023-12-28",
+  "n_assets": 8,
+  "cost_bps": 30.0,
+  "periods_per_year": 252,
+  "full": {
+    "annual_return": -0.06177490479531103,
+    "annual_vol": 0.07231264563352349,
+    "sharpe": -0.854275268925754,
+    "sortino": -1.1761239157847403,
+    "calmar": -0.4262464370970088,
+    "max_drawdown": -0.14492767427227027,
+    "hit_rate": 0.3367768595041322,
+    "n_periods": 484
+  },
+  "in_sample": {
+    "annual_return": -0.039114807535805866,
+    "annual_vol": 0.07073623821127974,
+    "sharpe": -0.5529670296994751,
+    "sortino": -0.7778583445046967,
+    "calmar": -0.4518280342072491,
+    "max_drawdown": -0.08657012087449245,
+    "hit_rate": 0.2988165680473373,
+    "n_periods": 338
+  },
+  "out_of_sample": {
+    "annual_return": -0.1142345820125216,
+    "annual_vol": 0.07598379202291398,
+    "sharpe": -1.5034072263473313,
+    "sortino": -1.9847295849065625,
+    "calmar": -1.2665764605765861,
+    "max_drawdown": -0.09019161935199582,
+    "hit_rate": 0.4246575342465753,
+    "n_periods": 146
+  },
+  "split": {
+    "train_start": "2022-01-03",
+    "train_end": "2023-05-28",
+    "test_start": "2023-05-29",
+    "test_end": "2023-12-28"
+  },
+  "benchmark": {
+    "annual_return": -0.07287900989911825,
+    "annual_vol": 0.19769208264491922,
+    "sharpe": -0.36864910786548016,
+    "sortino": -0.5337554597472135,
+    "calmar": -0.23668858707708734,
+    "max_drawdown": -0.3079109592866943,
+    "hit_rate": 0.4318181818181818,
+    "n_periods": 484
+  },
+  "attribution": {
+    "beta": 0.21011829079063216,
+    "alpha_annual": -0.04646169180079474,
+    "correlation": 0.574432343669277,
+    "r_squared": 0.32997251745337836,
+    "n_obs": 484
+  },
+  "walk_forward": {
+    "n_splits": 4,
+    "n_trials": 12,
+    "aggregate_oos_sharpe": -1.9294417015173935,
+    "deflated_sharpe": 0.0004578506123170643,
+    "mean_is_sharpe": 0.06428996299619816,
+    "mean_oos_sharpe": -2.205726674928993
+  }
+}
